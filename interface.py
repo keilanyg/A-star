@@ -30,11 +30,11 @@ class Interface:
         self.visited_list = set()
         self.__update()
 
-    def __pre_fill_matrix(self):
-        for y in range(self.size):
-            self.matrix.append([])
+    def __pre_fill_matrix(self): # criação de matriz de objetos Node.
+        for y in range(self.size): #loop para percorrer o labirinto
+            self.matrix.append([])# criação das linhas do labirinto.
             for x in range(self.size):
-                self.matrix[y].append(Node(x=x, y=y))
+                self.matrix[y].append(Node(x=x, y=y)) # criação de um novo nó  
 
     def __get_node(self, x, y):
         if 0 <= x < self.size and 0 <= y < self.size:
@@ -100,36 +100,36 @@ class Interface:
                                              )
 
         if self.current_state == "wall":
-            self.state_button = Button(self.master, text="Set the goal position", command=self.__set_goal)
+            self.state_button = Button(self.master, text="Selecione as paredes", command=self.__set_goal)
             self.state_button.pack()
         elif self.current_state == "goal":
-            self.state_button = Button(self.master, text="Set the start position", command=self.__set_start)
+            self.state_button = Button(self.master, text="Selecione o predador", command=self.__set_start)
             self.state_button.pack()
         elif self.current_state == "start":
-            self.state_button = Button(self.master, text="Start the algorithm", command=self.__find_path)
+            self.state_button = Button(self.master, text="Selecione a pressa", command=self.__find_path)
             self.state_button.pack()
 
-    def __find_path(self):
-        while not self.open_list.is_empty():
-            current_node_position = self.open_list.delete_element()
-            x, y = current_node_position
-            current_node = self.matrix[y][x]
+    def __find_path(self): # A*
+        while not self.open_list.is_empty(): # loop até que a fila de prioridade esteja vazia.
+            current_node_position = self.open_list.delete_element() # o no de maior prioridade é apagado e passa seu valor para a possição atual.
+            x, y = current_node_position 
+            current_node = self.matrix[y][x] #no atual com suas coordenadas.
 
-            self.visited_list.add(current_node_position)
+            self.visited_list.add(current_node_position) #marcação do no visitado.
 
-            if current_node_position == self.goal_position:
+            if current_node_position == self.goal_position: # chegada até a pressa e o desenho do caminho.
                 self.__reconstruct_path(current_node)
                 return
 
-            neighbors_positions = self.__find_neighbors(current_node_position)
+            neighbors_positions = self.__find_neighbors(current_node_position) #vizinhos validos.
 
-            for neighbor in neighbors_positions:
-                if neighbor in self.visited_list:
+            for neighbor in neighbors_positions: # loop para ignorar os vizinhos visitados.
+                if neighbor in self.visited_list:# ignora o vizinho visitado.
                     continue
 
-                neighbor_node = self.__get_node(neighbor[0], neighbor[1])
+                neighbor_node = self.__get_node(neighbor[0], neighbor[1]) # obtendo o nó do vizinho.
 
-                g_score = current_node.g + self.__calculate_g_score(current_node, neighbor_node)
+                g_score = current_node.g + self.__calculate_g_score(current_node, neighbor_node) #o custo g para o vizinho com base no custo atual do nó 
 
                 if g_score < neighbor_node.g:
                     neighbor_node.parent = current_node
