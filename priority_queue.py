@@ -31,6 +31,6 @@ class PriorityQueue:
             print("Queue is empty")
         else:
             for x in self.elements:
-                print(x)
+                print(x, ": pri", x.priority)
 
 

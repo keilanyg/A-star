@@ -1,0 +1,28 @@
+O algoritmo A* (A-Star) calcula o caminho mais curto entre um ponto de partida (start) e um ponto de chegada (goal) em um grafo, levando em consideração os custos associados às arestas entre os nós e uma heurística que estima o custo restante para atingir o objetivo a partir de um nó específico.
+
+O cálculo do algoritmo A* é baseado em três componentes-chave:
+
+1. *Custo Real (g):* Isso representa o custo acumulado (ou gasto) ao percorrer o caminho do nó inicial até o nó atual. Para o primeiro nó (o ponto de partida), g é geralmente definido como zero. À medida que o algoritmo se move através do grafo, ele atualiza o valor de g para os nós subsequentes com base no custo dos movimentos.
+
+2. *Heurística (h):* A heurística é uma função que estima o custo restante para alcançar o objetivo a partir de um nó específico. Essa estimativa é uma parte crucial do algoritmo A*. A heurística deve ser admissível, o que significa que não pode superestimar o custo real. Uma heurística comum usada é a distância de Manhattan, que calcula a distância horizontal e vertical entre dois pontos no grid.
+
+3. *Função de Avaliação (f):* A função de avaliação é usada para determinar a prioridade dos nós na fila de prioridade. Geralmente, é calculada como a soma do custo real (g) e do custo estimado até o objetivo (h): f = g + h. Isso representa a estimativa do custo total para alcançar o objetivo passando pelo nó atual.
+
+O algoritmo A* funciona da seguinte maneira:
+
+1. Inicializa um nó de partida com g = 0 e h calculado usando a heurística.
+
+2. Coloca o nó de partida na fila de prioridade com prioridade f = g + h.
+
+3. Enquanto a fila de prioridade não estiver vazia:
+   a. Remove o nó de prioridade mais baixa (menor valor de f) da fila.
+   b. Se o nó removido for o nó de chegada (goal), a busca é concluída, e o caminho foi encontrado.
+   c. Caso contrário, para cada nó vizinho do nó atual:
+      i. Calcula o custo real (g) do nó vizinho com base no custo real do nó atual e o custo da aresta para o vizinho.
+      ii. Calcula o custo estimado até o objetivo (h) para o nó vizinho usando a heurística.
+      iii. Calcula a função de avaliação (f) para o nó vizinho: f = g + h.
+      iv. Se o nó vizinho não estiver na fila de prioridade ou se tiver um f menor do que a entrada na fila, atualiza as informações do nó vizinho e o coloca na fila de prioridade.
+
+4. Se a fila de prioridade ficar vazia e o objetivo não for encontrado, não há um caminho válido.
+
+O algoritmo A* é completo e otimizado para encontrar o caminho mais curto em um grafo, e a heurística desempenha um papel fundamental na determinação da eficiência da pesquisa. Quanto mais precisa for a heurística, menos nós serão explorados, resultando em um desempenho mais rápido.

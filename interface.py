@@ -1,12 +1,15 @@
 from tkinter import *
 from node import Node
 from priority_queue import PriorityQueue
+import time
 
-def generete_matrix(size: int):
+
+def generate_matrix(size: int):
     import numpy as np
     matrix = np.full((size, size), 1)
     print(matrix)
     return matrix
+
 
 class Interface:
     def __init__(self, matrix=None):
@@ -27,6 +30,7 @@ class Interface:
         self.goal_position = None
         self.open_list = PriorityQueue()
         self.current_position = None
+        self.after_id = None  # ID do agendador do Tkinter
         self.visited_list = set()
         self.__update()
 
@@ -81,13 +85,14 @@ class Interface:
 
         for y in range(self.size):
             for x in range(self.size):
-                node = self.__get_node(x, y)
+                node: Node = self.__get_node(x, y)
                 color = {
                     "": "#FFFFFF",
                     "wall": "#000000",
                     "start": "#223d8f",
                     "goal": "#299855",
-                    "path": "pink"
+                    "path": "pink",
+                    "visited": "#12907A"
                 }[node.state]
 
                 self.canvas.create_rectangle(y * self.square_dimension,
@@ -100,22 +105,31 @@ class Interface:
                                              )
 
         if self.current_state == "wall":
-            self.state_button = Button(self.master, text="Set the goal position", command=self.__set_goal)
+            self.state_button = Button(
+                self.master, text="Selecione a posição do objetivo", command=self.__set_goal)
             self.state_button.pack()
         elif self.current_state == "goal":
-            self.state_button = Button(self.master, text="Set the start position", command=self.__set_start)
+            self.state_button = Button(
+                self.master, text="Selecione a posição inicial", command=self.__set_start)
             self.state_button.pack()
         elif self.current_state == "start":
-            self.state_button = Button(self.master, text="Start the algorithm", command=self.__find_path)
+            self.state_button = Button(
+                self.master, text="Iniciar algoritmo", command=self.__find_path)
             self.state_button.pack()
 
     def __find_path(self):
-        while not self.open_list.is_empty():
+        if not self.open_list.is_empty():
             current_node_position = self.open_list.delete_element()
             x, y = current_node_position
-            current_node = self.matrix[y][x]
+            current_node: Node = self.matrix[y][x]
 
             self.visited_list.add(current_node_position)
+
+            current_node.visited = True
+            if current_node_position != self.start_position:
+                current_node.state = "visited"
+        
+            self.__update()
 
             if current_node_position == self.goal_position:
                 self.__reconstruct_path(current_node)
@@ -129,16 +143,27 @@ class Interface:
 
                 neighbor_node = self.__get_node(neighbor[0], neighbor[1])
 
-                g_score = current_node.g + self.__calculate_g_score(current_node, neighbor_node)
+                if neighbor_node.state == "wall":
+                    continue  # Ignore obstáculos
+                
+                # Calcula o novo custo g para chegar ao vizinho a partir do nó atual.
+                g_score = current_node.g + \
+                    self.__calculate_g_score(current_node, neighbor_node)
+                print('position', (neighbor[0], neighbor[1]))
+                print('valores g:', neighbor_node.g, 'h:', neighbor_node.h, 'f:', neighbor_node.f)
 
+                # Se o novo custo g é menor do que o custo g anterior do vizinho
                 if g_score < neighbor_node.g:
                     neighbor_node.parent = current_node
                     neighbor_node.g = g_score
                     neighbor_node.h = self.__heuristic(neighbor)
                     neighbor_node.f = neighbor_node.g + neighbor_node.h
                     self.open_list.add_element(neighbor, neighbor_node.f)
+                print('valores atualizados g:', neighbor_node.g, 'h:', neighbor_node.h, 'f:', neighbor_node.f)
 
-        print("No path found")
+            self.master.after(200, self.__find_path)
+        else:
+            print("No path found")
 
     def __find_neighbors(self, current):
         x, y = current
@@ -163,7 +188,9 @@ class Interface:
         return abs(x1 - x2) + abs(y1 - y2)
 
     def __calculate_g_score(self, current_node, neighbor_node):
-        if abs(current_node.x - neighbor_node.x) + abs(current_node.y - neighbor_node.y) == 2:
+        dx = abs(current_node.x - neighbor_node.x)
+        dy = abs(current_node.y - neighbor_node.y)
+        if dx == 1 and dy == 1:
             return 14
         else:
             return 10
@@ -174,8 +201,8 @@ class Interface:
             current_node = current_node.parent
         self.__update()
 
+
 if __name__ == "__main__":
-    
     size = 10
     interface = Interface()
     interface.draw_interface()
