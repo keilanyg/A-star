@@ -34,11 +34,11 @@ class Interface:
         self.visited_list = set()
         self.__update()
 
-    def __pre_fill_matrix(self):
-        for y in range(self.size):
-            self.matrix.append([])
+    def __pre_fill_matrix(self): # criação de matriz de objetos Node.
+        for y in range(self.size): #loop para percorrer o labirinto
+            self.matrix.append([])# criação das linhas do labirinto.
             for x in range(self.size):
-                self.matrix[y].append(Node(x=x, y=y))
+                self.matrix[y].append(Node(x=x, y=y)) # criação de um novo nó  
 
     def __get_node(self, x, y):
         if 0 <= x < self.size and 0 <= y < self.size:
@@ -123,7 +123,7 @@ class Interface:
             x, y = current_node_position
             current_node: Node = self.matrix[y][x]
 
-            self.visited_list.add(current_node_position)
+            self.visited_list.add(current_node_position) #marcação do no visitado.
 
             current_node.visited = True
             if current_node_position != self.start_position:
@@ -135,13 +135,13 @@ class Interface:
                 self.__reconstruct_path(current_node)
                 return
 
-            neighbors_positions = self.__find_neighbors(current_node_position)
+            neighbors_positions = self.__find_neighbors(current_node_position) #vizinhos validos.
 
-            for neighbor in neighbors_positions:
-                if neighbor in self.visited_list:
+            for neighbor in neighbors_positions: # loop para ignorar os vizinhos visitados.
+                if neighbor in self.visited_list:# ignora o vizinho visitado.
                     continue
 
-                neighbor_node = self.__get_node(neighbor[0], neighbor[1])
+                neighbor_node = self.__get_node(neighbor[0], neighbor[1]) # obtendo o nó do vizinho.
 
                 if neighbor_node.state == "wall":
                     continue  # Ignore obstáculos
