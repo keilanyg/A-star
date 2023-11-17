@@ -1,8 +1,7 @@
 from tkinter import *
 from node import Node
 from priority_queue import PriorityQueue
-import time
-
+from PIL import Image, ImageTk
 
 def generate_matrix(size: int):
     import numpy as np
@@ -15,15 +14,23 @@ class Interface:
     def __init__(self, matrix=None):
         self.matrix = []
         self.master = Tk()
-        self.master.title("A* Maze Solver")
+        self.master.title("A*")
         self.square_dimension = 48
         self.size = 10
         self.current_state = "wall"
         self.__pre_fill_matrix()
 
-        self.canvas = Canvas(self.master, width=480, height=500)
+        self.canvas = Canvas(self.master, width=900, height=550)
         self.canvas.bind("<Button-1>", self.__set_square_color)
         self.canvas.pack()
+        # Carregando uma imagem de fundo
+        self.background_image = Image.open("imagens/banner.jpg")
+        self.background_image = self.background_image.resize((900, 550))  # Redimensiona a imagem
+        self.background_photo = ImageTk.PhotoImage(self.background_image)
+       
+        # Adicionando a imagem de fundo ao Canvas
+        self.canvas.create_image(0, 0, anchor="nw", image=self.background_photo)
+       
 
         self.state_button = None
         self.start_position = None
@@ -82,27 +89,54 @@ class Interface:
 
         if self.state_button:
             self.state_button.destroy()
+        
+        # Dicionário para armazenar as referências às imagens
+        self.image_references = {}
 
         for y in range(self.size):
             for x in range(self.size):
                 node: Node = self.__get_node(x, y)
-                color = {
-                    "": "#FFFFFF",
-                    "wall": "#000000",
-                    "start": "#223d8f",
-                    "goal": "#299855",
-                    "path": "pink",
-                    "visited": "#12907A"
-                }[node.state]
+                state = node.state
 
-                self.canvas.create_rectangle(y * self.square_dimension,
-                                             x * self.square_dimension,
-                                             (y + 1) * self.square_dimension,
-                                             (x + 1) * self.square_dimension,
-                                             fill=color,
-                                             outline="black",
-                                             tags="grid"
-                                             )
+                if state == "start":
+                    image_path = "imagens/robo.png"
+                elif state == "goal":
+                    image_path = "imagens/caixa.png"
+                else:
+                    image_path = None
+
+                if image_path:
+                    if image_path not in self.image_references:
+                        img = Image.open(image_path)
+                        photo_img = ImageTk.PhotoImage(img)
+                        self.image_references[image_path] = photo_img
+                    else:
+                        photo_img = self.image_references[image_path]
+
+                    self.canvas.create_image(
+                        y * self.square_dimension + self.square_dimension / 2,
+                        x * self.square_dimension + self.square_dimension / 2,
+                        image=photo_img,
+                        tags="grid"
+                    )
+                else:
+                    color = {
+                        "": "",
+                        "wall": "#000000",
+                        "path": "#8e6c40",
+                        "visited": "#12907A"
+                    }.get(state, "")
+
+                    margin = 5
+                    self.canvas.create_rectangle(
+                       ( y * self.square_dimension) + margin,
+                        (x * self.square_dimension) + margin,
+                        (y + 1) * self.square_dimension,
+                        (x + 1) * self.square_dimension,
+                        fill=color,
+                        outline="black",
+                        tags="grid"
+                    )
 
         if self.current_state == "wall":
             self.state_button = Button(
