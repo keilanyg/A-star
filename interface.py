@@ -3,13 +3,6 @@ from node import Node
 from priority_queue import PriorityQueue
 from PIL import Image, ImageTk
 
-def generate_matrix(size: int):
-    import numpy as np
-    matrix = np.full((size, size), 1)
-    print(matrix)
-    return matrix
-
-
 class Interface:
     def __init__(self, matrix=None):
         self.matrix = []
