@@ -17,7 +17,7 @@ class PriorityQueue: #class que implementa uma fila de prioridade usando uma lis
         element = Element(item, priority)
         self.elements.append(element)
 
-    def delete_element(self): # remoção do elemento de maior prioridade da fila.
+    def delete_min(self): # remoção do elemento de maior prioridade da fila.
         if self.is_empty(): 
             print("Fila Vazia")
             return None
