@@ -1,5 +1,5 @@
 from tkinter import *
-from node import Node
+from square import Square
 from priority_queue import PriorityQueue
 from PIL import Image, ImageTk
 
@@ -34,13 +34,13 @@ class Interface:
         self.visited_list = set()
         self.__update()
 
-    def __pre_fill_matrix(self): # criação de matriz de objetos Node.
+    def __pre_fill_matrix(self): # criação de matriz de objetos Square.
         for y in range(self.size): #loop para percorrer o labirinto
             self.matrix.append([])# criação das linhas do labirinto.
             for x in range(self.size):
-                self.matrix[y].append(Node(x=x, y=y)) # criação de um novo nó  
+                self.matrix[y].append(Square(x=x, y=y)) # criação de um novo nó  
 
-    def __get_node(self, x, y):
+    def __get_square(self, x, y):
         if 0 <= x < self.size and 0 <= y < self.size:
             if self.matrix[y][x]:
                 return self.matrix[y][x]
@@ -66,14 +66,14 @@ class Interface:
                 self.goal_position = (col, row)
         elif self.current_state == "start":
             if self.start_position is None:
-                cur_node = self.matrix[row][col]
-                cur_node.state = "start"
+                cur_square = self.matrix[row][col]
+                cur_square.state = "start"
                 self.start_position = (col, row)
                 self.current_position = self.start_position
-                cur_node.g = 0
-                cur_node.h = self.__heuristic(self.current_position)
-                cur_node.f = cur_node.g + cur_node.h
-                self.open_list.add_element(self.start_position, cur_node.f)
+                cur_square.g = 0
+                cur_square.h = self.__heuristic(self.current_position)
+                cur_square.f = cur_square.g + cur_square.h
+                self.open_list.add_element(self.start_position, cur_square.f)
 
         self.__update()
 
@@ -88,8 +88,8 @@ class Interface:
 
         for y in range(self.size):
             for x in range(self.size):
-                node: Node = self.__get_node(x, y)
-                state = node.state
+                square: Square = self.__get_square(x, y)
+                state = square.state
 
                 if state == "start":
                     image_path = "imagens/robo.png"
@@ -146,47 +146,47 @@ class Interface:
 
     def __find_path(self):
         if not self.open_list.is_empty():
-            current_node_position = self.open_list.delete_element()
-            x, y = current_node_position
-            current_node: Node = self.matrix[y][x]
+            current_position = self.open_list.delete_min()
+            x, y = current_position
+            current_square: Square = self.matrix[y][x]
 
-            self.visited_list.add(current_node_position) #marcação do no visitado.
+            self.visited_list.add(current_position) #marcação do no visitado.
 
-            current_node.visited = True
-            if current_node_position != self.start_position:
-                current_node.state = "visited"
+            current_square.visited = True
+            if current_position != self.start_position:
+                current_square.state = "visited"
         
             self.__update()
 
-            if current_node_position == self.goal_position:
-                self.__reconstruct_path(current_node)
+            if current_position == self.goal_position:
+                self.__reconstruct_path(current_square)
                 return
 
-            neighbors_positions = self.__find_neighbors(current_node_position) #vizinhos validos.
+            neighbors_positions = self.__find_neighbors(current_position) #vizinhos validos.
 
             for neighbor in neighbors_positions: # loop para ignorar os vizinhos visitados.
                 if neighbor in self.visited_list:# ignora o vizinho visitado.
                     continue
 
-                neighbor_node = self.__get_node(neighbor[0], neighbor[1]) # obtendo o nó do vizinho.
+                neighbor_square = self.__get_square(neighbor[0], neighbor[1]) # obtendo o nó do vizinho.
 
-                if neighbor_node.state == "wall":
+                if neighbor_square.state == "wall":
                     continue  # Ignore obstáculos
                 
                 # Calcula o novo custo g para chegar ao vizinho a partir do nó atual.
-                g_score = current_node.g + \
-                    self.__calculate_g_score(current_node, neighbor_node)
+                g_score = current_square.g + \
+                    self.__calculate_g_score(current_square, neighbor_square)
                 print('position', (neighbor[0], neighbor[1]))
-                print('valores g:', neighbor_node.g, 'h:', neighbor_node.h, 'f:', neighbor_node.f)
+                print('valores g:', neighbor_square.g, 'h:', neighbor_square.h, 'f:', neighbor_square.f)
 
                 # Se o novo custo g é menor do que o custo g anterior do vizinho
-                if g_score < neighbor_node.g:
-                    neighbor_node.parent = current_node
-                    neighbor_node.g = g_score
-                    neighbor_node.h = self.__heuristic(neighbor)
-                    neighbor_node.f = neighbor_node.g + neighbor_node.h
-                    self.open_list.add_element(neighbor, neighbor_node.f)
-                print('valores atualizados g:', neighbor_node.g, 'h:', neighbor_node.h, 'f:', neighbor_node.f)
+                if g_score < neighbor_square.g:
+                    neighbor_square.parent = current_square
+                    neighbor_square.g = g_score
+                    neighbor_square.h = self.__heuristic(neighbor)
+                    neighbor_square.f = neighbor_square.g + neighbor_square.h
+                    self.open_list.add_element(neighbor, neighbor_square.f)
+                print('valores atualizados g:', neighbor_square.g, 'h:', neighbor_square.h, 'f:', neighbor_square.f)
 
             self.master.after(200, self.__find_path)
         else:
@@ -202,9 +202,9 @@ class Interface:
                     continue
 
                 new_x, new_y = x + n_x, y + n_y
-                cur_neighbor_node = self.__get_node(new_x, new_y)
+                cur_neighbor_square = self.__get_square(new_x, new_y)
 
-                if 0 <= new_x < self.size and 0 <= new_y < self.size and cur_neighbor_node.state != "wall":
+                if 0 <= new_x < self.size and 0 <= new_y < self.size and cur_neighbor_square.state != "wall":
                     neighbors.append((new_x, new_y))
 
         return neighbors
@@ -214,18 +214,18 @@ class Interface:
         x2, y2 = self.goal_position
         return abs(x1 - x2) + abs(y1 - y2)
 
-    def __calculate_g_score(self, current_node, neighbor_node):
-        dx = abs(current_node.x - neighbor_node.x)
-        dy = abs(current_node.y - neighbor_node.y)
+    def __calculate_g_score(self, current_square, neighbor_square):
+        dx = abs(current_square.x - neighbor_square.x)
+        dy = abs(current_square.y - neighbor_square.y)
         if dx == 1 and dy == 1:
             return 14
         else:
             return 10
 
-    def __reconstruct_path(self, current_node):
-        while current_node.parent:
-            current_node.state = "path"
-            current_node = current_node.parent
+    def __reconstruct_path(self, current_square):
+        while current_square.parent:
+            current_square.state = "path"
+            current_square = current_square.parent
         self.__update()
 
 
