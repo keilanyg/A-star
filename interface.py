@@ -222,11 +222,31 @@ class Interface:
         else:
             return 10
 
-    def __reconstruct_path(self, current_square):
+    """def __reconstruct_path(self, current_square):
         while current_square.parent:
             current_square.state = "path"
             current_square = current_square.parent
-        self.__update()
+        self.__update()"""
+        
+    def __reconstruct_path(self, current_node):
+        path_nodes = []
+
+        while current_node.parent:
+            path_nodes.insert(0, current_node)
+            current_node = current_node.parent
+
+        self.__animate_path_reconstruction(path_nodes)
+
+    def __animate_path_reconstruction(self, path_nodes):
+        if path_nodes:
+            self.__animate_path_reconstruction_helper(path_nodes, 0)
+
+    def __animate_path_reconstruction_helper(self, path_nodes, index):
+        if index < len(path_nodes):
+            node = path_nodes[index]
+            node.state = "path"
+            self.__update()
+            self.master.after(200, lambda i=index+1: self.__animate_path_reconstruction_helper(path_nodes, i))
 
 
 if __name__ == "__main__":
