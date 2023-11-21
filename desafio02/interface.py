@@ -1,16 +1,8 @@
-from tkinter import *
+"""from tkinter import *
 from square import Square
 from priority_queue import PriorityQueue
 import time
 import threading
-
-
-def generate_matrix(size: int):
-    import numpy as np
-    matrix = np.full((size, size), 1)
-    print(matrix)
-    return matrix
-
 
 class Interface:
     def __init__(self, matrix=None):
@@ -215,8 +207,121 @@ class Interface:
         # Inicie a animação em uma thread separada
         threading.Thread(target=self.animate_path, args=(path,)).start()
 
-
 if __name__ == "__main__":
     size = 10
+    interface = Interface()
+    interface.draw_interface()
+"""
+
+from tkinter import *
+from PIL import Image, ImageTk
+
+class Node:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.state = ""
+        self.parent = None
+
+class Interface:
+    def __init__(self):
+        self.master = Tk()
+        self.master.title("A*")
+        self.grid_size = 10
+        self.square_size = 48
+        self.start_position = (2, 0)
+        self.goal_position = (1, 0)
+        self.current_position = self.start_position
+
+        self.canvas = Canvas(self.master, width=900, height=550)
+        self.canvas.pack()
+
+        self.background_image = Image.open("imagens/pacman_background.jpg")
+        self.background_image = self.background_image.resize((900, 550))
+        self.background_photo = ImageTk.PhotoImage(self.background_image)
+
+        self.canvas.create_image(0, 0, anchor="nw", image=self.background_photo)
+
+        self.start_image = Image.open("imagens/pacman.png")
+        self.start_photo = ImageTk.PhotoImage(self.start_image)
+
+        self.goal_image = Image.open("imagens/dot.png")
+        self.goal_photo = ImageTk.PhotoImage(self.goal_image)
+
+        self.start_image_id = self.canvas.create_image(
+            self.start_position[1] * self.square_size + self.square_size / 2,
+            self.start_position[0] * self.square_size + self.square_size / 2,
+            image=self.start_photo,
+            tags="grid"
+        )
+
+        self.goal_image_id = self.canvas.create_image(
+            self.goal_position[1] * self.square_size + self.square_size / 2,
+            self.goal_position[0] * self.square_size + self.square_size / 2,
+            image=self.goal_photo,
+            tags="grid"
+        )
+
+        self.grid_lines()
+
+        self.master.after(1000, self.loop)
+
+    def draw_interface(self):
+        self.master.mainloop()
+
+    def pacman(self, position):
+        self.canvas.delete(self.start_image_id)
+        self.start_image_id = self.canvas.create_image(
+            position[1] * self.square_size + self.square_size / 2,
+            position[0] * self.square_size + self.square_size / 2,
+            image=self.start_photo,
+            tags="grid"
+        )
+
+    def goal(self, position):
+        self.canvas.delete(self.goal_image_id)
+        self.goal_image_id = self.canvas.create_image(
+            position[1] * self.square_size + self.square_size / 2,
+            position[0] * self.square_size + self.square_size / 2,
+            image=self.goal_photo,
+            tags="grid"
+        )
+
+    def update_positions(self):
+        directions = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1),           (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        ]
+
+        # Update Pac-Man position
+        self.current_position = (
+            (self.current_position[0] + 2) % self.grid_size,
+            self.current_position[1]
+        )
+
+        # Update goal position
+        self.goal_position = (
+            (self.goal_position[0] + 1) % self.grid_size,
+            self.goal_position[1]
+        )
+
+    def loop(self):
+        self.update_positions()
+
+        # Draw Pac-Man and goal based on updated positions
+        self.pacman(self.current_position)
+        self.goal(self.goal_position)
+
+        self.master.after(1000, self.loop)
+
+    def grid_lines(self):
+        for i in range(1, self.grid_size):
+            x = i * self.square_size
+            self.canvas.create_line(x, 0, x, self.square_size * self.grid_size, fill="black", tags="grid")
+            y = i * self.square_size
+            self.canvas.create_line(0, y, self.square_size * self.grid_size, y, fill="black", tags="grid")
+
+if __name__ == "__main__":
     interface = Interface()
     interface.draw_interface()
