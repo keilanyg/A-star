@@ -1,4 +1,4 @@
-"""class Square:
+class Square:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -7,11 +7,4 @@
         self.f = float('inf')
         self.state = ""
         self.parent = None
-        self.neighbors = []"""
-
-class Node:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.state = ""
-        self.parent = None
+        self.neighbors = []

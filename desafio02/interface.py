@@ -236,16 +236,16 @@ class Interface:
         self.canvas = Canvas(self.master, width=900, height=550)
         self.canvas.pack()
 
-        self.background_image = Image.open("imagens/pacman_background.jpg")
+        self.background_image = Image.open("../imagens/pacman_background.jpg")
         self.background_image = self.background_image.resize((900, 550))
         self.background_photo = ImageTk.PhotoImage(self.background_image)
 
         self.canvas.create_image(0, 0, anchor="nw", image=self.background_photo)
 
-        self.start_image = Image.open("imagens/pacman.png")
+        self.start_image = Image.open("../imagens/pacman.png")
         self.start_photo = ImageTk.PhotoImage(self.start_image)
 
-        self.goal_image = Image.open("imagens/dot.png")
+        self.goal_image = Image.open("../imagens/dot.png")
         self.goal_photo = ImageTk.PhotoImage(self.goal_image)
 
         self.start_image_id = self.canvas.create_image(
