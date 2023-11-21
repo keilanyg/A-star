@@ -1,4 +1,4 @@
-"""class Element: #class para representar o elemento na fila de prioridade.
+class Element: #class para representar o elemento na fila de prioridade.
     def __init__(self, value, priority):
         self.item = value #valor do elemento
         self.priority = priority # prioridade do elemento
@@ -31,4 +31,4 @@ class PriorityQueue: #class que implementa uma fila de prioridade usando uma lis
             print("Fila Vazia")
         else:
             for x in self.elements:
-                print(x, ": pri", x.priority)"""
+                print(x, ": pri", x.priority)
