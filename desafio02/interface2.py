@@ -303,33 +303,25 @@ class Interface:
                 new_x, new_y = x + n_x, y + n_y
                 cur_neighbor_square = self.__get_square(new_x, new_y)
 
-                if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size and cur_neighbor_square.state != "wall":
-
-                    # neighbors.append((new_x, new_y))
+                if cur_neighbor_square and cur_neighbor_square.state != "wall":
                     neighbors.append(cur_neighbor_square)
-        
-        # Retorna os quadrados vizinhos
+
         return neighbors
 
     def update_positions(self):
-        """ não sei exatamente pra q serve """
-        directions = [
-            (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),           (0, 1),
-            (1, -1), (1, 0), (1, 1)
-        ]
+        """ Update Pac-Man and goal positions based on the A* algorithm results """
+        if self.current_position_predator and self.current_position_prey:
+            # Update Pac-Man position
+            self.current_position_predator = (
+                (self.current_position_predator[0] + 2) % self.grid_size,
+                self.current_position_predator[1]
+            )
 
-        # Update Pac-Man position
-        self.current_position_predator = (
-            (self.current_position_predator[0] + 2) % self.grid_size,
-            self.current_position_predator[1]
-        )
-
-        # Update goal position
-        self.current_position_prey = (
-            (self.current_position_prey[0] + 1) % self.grid_size,
-            self.current_position_prey[1]
-        )
+            # Update goal position
+            self.current_position_prey = (
+                (self.current_position_prey[0] + 1) % self.grid_size,
+                self.current_position_prey[1]
+            )
 
     def __run_a_star(self):
         self.__update()
@@ -365,8 +357,8 @@ class Interface:
         self.update_positions()
 
         # Draw Pac-Man and goal based on updated positions
-        self.pacman(self.current_position)
-        self.goal(self.prey_position)
+        self.pacman(self.current_position_predator)
+        self.goal(self.current_position_prey)
 
         self.master.after(1000, self.loop)
 
