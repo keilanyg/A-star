@@ -31,6 +31,9 @@ class Interface:
         self.canvas = Canvas(self.master, width=900, height=550)
         self.canvas.bind("<Button-1>", self.__set_positions)
         self.canvas.pack()
+        
+        self.start_image_id = None
+        self.goal_image_id = None
 
         self.background_image = Image.open("../imagens/pacman_background.jpg")
         self.background_image = self.background_image.resize((900, 550))
@@ -97,7 +100,9 @@ class Interface:
         self.current_state = "prey"
 
     def pacman(self, position):
-        self.canvas.delete(self.start_image_id)
+        if self.start_image_id:
+            self.canvas.delete(self.start_image_id)
+
         self.start_image_id = self.canvas.create_image(
             position[1] * self.square_size + self.square_size / 2,
             position[0] * self.square_size + self.square_size / 2,
@@ -105,8 +110,12 @@ class Interface:
             tags="grid"
         )
 
+    
+
     def goal(self, position):
-        self.canvas.delete(self.goal_image_id)
+        if self.goal_image_id:
+            self.canvas.delete(self.goal_image_id)
+
         self.goal_image_id = self.canvas.create_image(
             position[1] * self.square_size + self.square_size / 2,
             position[0] * self.square_size + self.square_size / 2,
@@ -356,11 +365,12 @@ class Interface:
     def loop(self):
         self.update_positions()
 
-        # Draw Pac-Man and goal based on updated positions
-        self.pacman(self.current_position_predator)
-        self.goal(self.current_position_prey)
+        if self.current_position_predator and self.current_position_prey:
+            # Draw Pac-Man and goal based on updated positions
+            self.pacman(self.current_position_predator)
+            self.goal(self.current_position_prey)
 
-        self.master.after(1000, self.loop)
+            self.master.after(1000, self.loop)
 
     def grid_lines(self):
         for i in range(1, self.grid_size):
