@@ -68,7 +68,7 @@ class Interface:
         if 0 <= row < self.grid_size and 0 <= col < self.grid_size:
             return self.matrix[row][col] if self.matrix[row][col] else None
         else:
-            print(f"Out of bounds: ({row}, {col})")
+            print(f"Fora do gráfico: ({row}, {col})")
             return None
 
     def __set_positions(self, event):
@@ -193,26 +193,6 @@ class Interface:
                 self.master, text="Iniciar algoritmo", command=self.__run_a_star)
             self.state_button.pack()
 
-    def __find_neighbors(self, current):
-        x, y = current
-        neighbors = []
-
-        for n_x in [-1, 0, 1]:
-            for n_y in [-1, 0, 1]:
-                if n_x == 0 and n_y == 0:
-                    continue
-
-                new_x, new_y = x + n_x, y + n_y
-                cur_neighbor_square = self.__get_square(new_x, new_y)
-
-                if (
-                0 <= new_x < self.size 
-                and 0 <= new_y < self.size 
-                and cur_neighbor_square.state != "wall"):
-                    neighbors.append((new_x, new_y))
-
-        return neighbors
-
     def __heuristic(self, current, goal):
         x1, y1 = current
         x2, y2 = goal
@@ -252,8 +232,10 @@ class Interface:
                 current_position = (current_square.x, current_square.y)
                 goal = current_position
 
+            print('posição atua:', current_position, self.current_player)
             if current_square == goal_square:
                 return True
+            
 
             open_list.remove(current_square)
             visited_list.add(current_square)
@@ -393,5 +375,5 @@ class Interface:
 if __name__ == "__main__":
     interface = Interface()
     # interface.loop()
-    """ o método loop só pode ser iniciado após as posições serem definidas, o que pode ser um problema """
+    """ o método loop só pode ser iniciado após as posições serem definidas"""
     interface.draw_interface()
