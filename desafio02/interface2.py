@@ -50,23 +50,6 @@ class Interface:
 
         self.visited_list = set()
 
-        # self.start_image_id = self.canvas.create_image(
-        #     self.predator_position[1] * self.square_size + self.square_size / 2,
-        #     self.predator_position[0] * self.square_size + self.square_size / 2,
-        #     image=self.start_photo,
-        #     tags="grid"
-        # )
-
-        # self.goal_image_id = self.canvas.create_image(
-        #     self.prey_position[1] * self.square_size + self.square_size / 2,
-        #     self.prey_position[0] * self.square_size + self.square_size / 2,
-        #     image=self.goal_photo,
-        #     tags="grid"
-        # )
-
-        # self.grid_lines()
-
-        # self.master.after(1000, self.loop)
         self.__update()
 
     def __pre_fill_matrix(self): # criação de matriz de objetos Square.
@@ -81,7 +64,6 @@ class Interface:
     def __get_square(self, row, col):
         if 0 <= row < self.grid_size and 0 <= col < self.grid_size:
             if self.matrix[row][col]:
-                print("vai retornar o certo")
                 return self.matrix[row][col]
             else:
                 print(f"No square found at position ({row}, {col})")
@@ -205,9 +187,6 @@ class Interface:
                 self.master, text="Iniciar algoritmo", command=self.__run_a_star)
             self.state_button.pack()
 
-    def __start_algorithm(self):
-        pass
-
     def __find_neighbors(self, current):
         x, y = current
         neighbors = []
@@ -275,7 +254,7 @@ class Interface:
             visited_list.add(current_position)
 
             # Lógica de econtrar os vizinhos
-            neighbors_squares = self.__find_neighbors()
+            neighbors_squares = self.__find_neighbors(current_position)
 
             for neighbor in neighbors_squares:
                 if neighbor in visited_list or neighbor.state == "wall":
@@ -283,7 +262,7 @@ class Interface:
                 
                 g_score = current_square.g + \
                     self.__calculate_g_score(current_square, neighbor)
-                print('position', (neighbor[0], neighbor[1]))
+                # print('position', (neighbor[0], neighbor[1]))
                 print('valores g:', neighbor.g, 'h:', neighbor.h, 'f:', neighbor.f)
 
                 # Se o novo custo g é menor do que o custo g anterior do vizinho
@@ -292,7 +271,7 @@ class Interface:
                     neighbor.g = g_score
                     neighbor.h = self.__heuristic((neighbor.x, neighbor.y), (goal[0], goal[1]))
                     neighbor.f = neighbor.g + neighbor.h
-                    self.open_list.add_element(neighbor, neighbor.f)
+                    open_list.add(neighbor)
                 print('valores atualizados g:', neighbor.g, 'h:', neighbor.h, 'f:', neighbor.f)
 
             count += 1
@@ -324,12 +303,14 @@ class Interface:
         for square_position in open_list:
             square: Square = self.__get_square(square_position[0], square_position[1])
             if square.f < min_f_value:
+                print("entrou")
                 min_f_square = square
                 min_f_value = square.f
 
         # Retorna um objeto do tipo square
         print('retorno', min_f_square)
-        return min_f_square
+        if min_f_square:
+            return min_f_square
     
     # Presa usa
     def __find_max_f(self, open_list):
@@ -358,7 +339,7 @@ class Interface:
                 new_x, new_y = x + n_x, y + n_y
                 cur_neighbor_square = self.__get_square(new_x, new_y)
 
-                if 0 <= new_x < self.size and 0 <= new_y < self.size and cur_neighbor_square.state != "wall":
+                if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size and cur_neighbor_square.state != "wall":
                     # neighbors.append((new_x, new_y))
                     neighbors.append(cur_neighbor_square)
         

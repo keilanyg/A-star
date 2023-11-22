@@ -4,7 +4,7 @@ class Square:
         self.y = y
         self.g = float('inf')
         self.h = 0
-        self.f = float('inf')
+        self.f = 0
         self.state = ""
         self.parent = None
         self.neighbors = []
