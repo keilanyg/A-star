@@ -63,13 +63,10 @@ class Interface:
     
     def __get_square(self, row, col):
         if 0 <= row < self.grid_size and 0 <= col < self.grid_size:
-            if self.matrix[row][col]:
-                return self.matrix[row][col]
-            else:
-                print(f"No square found at position ({row}, {col})")
+            return self.matrix[row][col] if self.matrix[row][col] else None
         else:
             print(f"Out of bounds: ({row}, {col})")
-        return None
+            return None
 
     def __set_positions(self, event):
         row = event.y // self.square_size
@@ -199,7 +196,10 @@ class Interface:
                 new_x, new_y = x + n_x, y + n_y
                 cur_neighbor_square = self.__get_square(new_x, new_y)
 
-                if 0 <= new_x < self.size and 0 <= new_y < self.size and cur_neighbor_square.state != "wall":
+                if (
+                0 <= new_x < self.size 
+                and 0 <= new_y < self.size 
+                and cur_neighbor_square.state != "wall"):
                     neighbors.append((new_x, new_y))
 
         return neighbors
@@ -225,20 +225,17 @@ class Interface:
         goal_square = self.__get_square(goal[0], goal[1])
 
         start_square.g = 0
-        start_square.h = self.__heuristic((start[0], start[1]), (goal[0], goal[1]))
-        start_square.f - start_square.g + start_square.h
+        start_square.h = self.__heuristic(start, goal)
+        start_square.f = start_square.g + start_square.h
 
-        open_list.add(start)
+        open_list.add(start_square)
         count = 0
 
         while open_list:
-            # self.__update()
             time.sleep(0.2)
-            
-            # Pega a posição atual de acordo com quem é o player da vez
+
             if self.current_player == "predator":
                 current_square = self.__find_min_f(open_list)
-                print('cur', current_square)
                 current_position = (current_square.x, current_square.y)
                 start = current_position
             else:
@@ -246,85 +243,52 @@ class Interface:
                 current_position = (current_square.x, current_square.y)
                 goal = current_position
 
-            # Predador usa presa
             if current_square == goal_square:
                 return True
-            
-            open_list.remove(current_position)
-            visited_list.add(current_position)
 
-            # Lógica de econtrar os vizinhos
+            open_list.remove(current_square)
+            visited_list.add(current_square)
+
             neighbors_squares = self.__find_neighbors(current_position)
 
             for neighbor in neighbors_squares:
                 if neighbor in visited_list or neighbor.state == "wall":
                     continue
-                
-                g_score = current_square.g + \
-                    self.__calculate_g_score(current_square, neighbor)
-                # print('position', (neighbor[0], neighbor[1]))
-                print('valores g:', neighbor.g, 'h:', neighbor.h, 'f:', neighbor.f)
 
-                # Se o novo custo g é menor do que o custo g anterior do vizinho
+                g_score = current_square.g + self.__calculate_g_score(
+                    current_square, neighbor
+                )
+
                 if g_score < neighbor.g:
                     neighbor.parent = current_square
                     neighbor.g = g_score
-                    neighbor.h = self.__heuristic((neighbor.x, neighbor.y), (goal[0], goal[1]))
+                    neighbor.h = self.__heuristic((neighbor.x, neighbor.y), goal)
                     neighbor.f = neighbor.g + neighbor.h
                     open_list.add(neighbor)
-                print('valores atualizados g:', neighbor.g, 'h:', neighbor.h, 'f:', neighbor.f)
 
             count += 1
-            # Thread talvez tenha que ficar aqui
-            if self.current_player == "predator" and count == 3:
-                break
-            if self.current_player == "prey" and count == 2:
+
+            if (
+                self.current_player == "predator" and count == 3
+            ) or (
+                self.current_player == "prey" and count == 2
+            ):
                 break
 
             self.current_player = "prey" if self.current_player == "predator" else "predator"
-            
-            for i in range(self.grid_size):
-                for square in self.matrix[i]:
-                    square.g = 0 
-                    square.h = 0 
-                    square.f = 0 
 
-            """ chamada recursiva para mudar o player, mas é preciso ver melhor como funciona"""
-            if self.current_player == "predator":
-                return self.__execute_algorithm(start, goal)
-            else:
-                return self.__execute_algorithm(start, goal)
+        if self.current_player == "predator":
+            return self.__execute_algorithm(start, goal)
+        else:
+            return self.__execute_algorithm(start, goal)
 
     # Predador usa
     def __find_min_f(self, open_list):
-        min_f_square = None
-        min_f_value = float('inf')
+        min_f_square = min(open_list, key=lambda square: square.f)
+        return min_f_square
 
-        for square_position in open_list:
-            square: Square = self.__get_square(square_position[0], square_position[1])
-            if square.f < min_f_value:
-                print("entrou")
-                min_f_square = square
-                min_f_value = square.f
-
-        # Retorna um objeto do tipo square
-        print('retorno', min_f_square)
-        if min_f_square:
-            return min_f_square
-    
-    # Presa usa
     def __find_max_f(self, open_list):
-        max_f_square = None
-        max_f_value = -1
-
-        for square_position in open_list:
-            square: Square = self.__get_square(square_position[0], square_position[1])
-
-            if square.f > max_f_value:
-                max_f_square = square
-                max_f_value = square.f
-
-        # Retorna um objeto do tipo square
+        max_f_square = max(open_list, key=lambda square: square.f)
         return max_f_square
     
     def __find_neighbors(self, current):
@@ -340,6 +304,7 @@ class Interface:
                 cur_neighbor_square = self.__get_square(new_x, new_y)
 
                 if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size and cur_neighbor_square.state != "wall":
+
                     # neighbors.append((new_x, new_y))
                     neighbors.append(cur_neighbor_square)
         
@@ -377,6 +342,20 @@ class Interface:
                 self.__update()
                 print("Presa não encontrada")
 
+            self.loop()  # Start the animation loop
+
+        thread = threading.Thread(target=a_star_thread)
+        thread.start()
+        self.player = "predator"
+
+        def a_star_thread():
+            path_found = self.__execute_algorithm(self.predator_position, self.prey_position)
+            if path_found:
+                print("Presa foi encontrada")
+            else:
+                self.__update()
+                print("Presa não encontrada")
+
         """ ativa a therad, ver como funciona e o pq do player ser predador """
         thread = threading.Thread(target=a_star_thread)
         thread.start()
@@ -404,9 +383,10 @@ class Interface:
 
         while current_square:
             path.append((current_square.x, current_square.y))
-            current_square.parent
-        
-        return path.reverse()
+            current_square = current_square.parent
+
+        path.reverse()
+        return path
 
 if __name__ == "__main__":
     interface = Interface()
