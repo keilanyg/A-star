@@ -109,28 +109,6 @@ class Interface:
     def __set_prey(self):
         self.current_state = "prey"
 
-    def pacman(self, position):
-        if self.start_image_id:
-            self.canvas.delete(self.start_image_id)
-
-        self.start_image_id = self.canvas.create_image(
-            position[1] * self.square_size + self.square_size / 2,
-            position[0] * self.square_size + self.square_size / 2,
-            image=self.start_photo,
-            tags="grid"
-        )
-
-    def goal(self, position):
-        if self.goal_image_id:
-            self.canvas.delete(self.goal_image_id)
-
-        self.goal_image_id = self.canvas.create_image(
-            position[1] * self.square_size + self.square_size / 2,
-            position[0] * self.square_size + self.square_size / 2,
-            image=self.goal_photo,
-            tags="grid"
-        )
-
     def __update(self,):
         self.canvas.delete("grid")
 
@@ -175,7 +153,7 @@ class Interface:
                         "wall": "#000000",
                         "path": "#8e6c40",
                         "visited": "#12907A",
-                        # "prey": "pink"
+                        "prey": "pink"
                     }.get(state, "")
 
                     self.canvas.create_rectangle(
@@ -235,7 +213,7 @@ class Interface:
 
         # Falta alternar os valores pra cada player e alterar os valores e cada vez que eles se encontram
         while open_list:
-            time.sleep(0.2)
+            # time.sleep(0.2)
 
             if self.current_player == "predator":
                 current_square = self.__find_min_f(open_list)
@@ -260,13 +238,15 @@ class Interface:
                     print('caminho a ser percorrido:', path)
                     if self.current_player == "predator":
                         print("posição antiga", self.current_position_predator)
-                        print("posição a ser acessada", path[-2])
                         ancient_predator_square = self.__get_square(self.current_position_predator[0], self.current_position_predator[1])
                         ancient_predator_square.state = ""
-                        self.current_position_predator = path[-2]
-                        current_square.state = "predator"
+                        if len(path) > 1:
+                            print("posição a ser acessada", path[-2])
+                            self.current_position_predator = path[-2]
+                            current_square.state = "predator"
 
                         self.reset_square_values()
+                    return True
 
                         # if self.current_position_predator != self.current_position_prey:
                         #     # print("ainda n achou")
@@ -274,7 +254,6 @@ class Interface:
                         #     # for i in range(self.max_num_square_predator_walk, 2, -1):
                         #     #     pass
                         #     print("posição a ser acessada 2", path[-3])
-                    return True
 
             open_list.remove(current_square)
             visited_list.add(current_square)
@@ -311,61 +290,34 @@ class Interface:
                 self.reset_square_values()
                 break
 
-    def walk_prey(self, current_position: tuple, goal: tuple):
-        current_square = self.__get_square(current_position[0], current_position[1])
-        neighbors_squares = self.__find_neighbors(current_position)
-
-        for neighbor in neighbors_squares:
-            if neighbor.state == "wall":
-                continue
-
-            g_score = current_square.g + self.__calculate_g_score(
-                current_square, neighbor
-            )
-
-            if g_score < neighbor.g:
-                neighbor.parent = current_square
-                neighbor.g = g_score
-                neighbor.h = self.__heuristic((neighbor.x, neighbor.y), goal)
-                neighbor.f = neighbor.g + neighbor.h
-
-        max_f_square = max(neighbors_squares, key=lambda square: square.f)
-        self.current_position_prey = (max_f_square.x, max_f_square.y)
-        self.num_square_walk += 1
-        print("nova posição presa", self.current_position_prey)
-        self.reset_square_values()
-        return max_f_square
-
     def update_interface(self):
         """ Pegar as casas de pesquisa de acordo com o melhor caminho encontrado, acho que precisa percorrer toda vez que muda a posição """
-        while self.current_position_predator != self.current_position_prey:
-            if self.current_player == "predator" and self.num_square_walk >= self.max_num_square_predator_walk:
+        # while self.current_position_predator != self.current_position_prey:
+        if self.current_player == "predator" and self.num_square_walk >= self.max_num_square_predator_walk:
                 print("entrou aqui")
                 self.current_player = "prey"
                 self.num_square_walk = 0
-            elif self.current_player == "prey" and self.num_square_walk >= self.max_num_square_prey_walk:
-                print("agora entrou aqui")
-                self.current_player = "predator"
-                self.num_square_walk = 0
+        elif self.current_player == "prey" and self.num_square_walk >= self.max_num_square_prey_walk:
+            print("agora entrou aqui")
+            self.current_player = "predator"
+            self.num_square_walk = 0
 
-            print("player", self.current_player)
-            print('posição atual predador', self.current_position_predator)
-            print('posição atual presa', self.current_position_prey)
-            self.call_search_logic()
-            # self.master.after(200, self.call_search_logic)
-        else:
-            print("encontrou o caminho")
-            return True
+        print("player", self.current_player)
+        print('posição atual predador', self.current_position_predator)
+        print('posição atual presa', self.current_position_prey)
+        self.__update()
+        self.call_search_logic()
+        # self.update_interface()
+        self.master.after(500, self.update_interface)
 
     def call_search_logic(self):
         # and self.num_square_walk < self.max_num_square_predator_walk:
         if self.current_player == "predator":
-            return self.__find_path(self.current_position_predator, self.current_position_prey, set(), set())
+            return self.__find_path(self.current_position_predator, self.current_position_prey)
         # and self.num_square_walk < self.max_num_square_prey_walk:
         elif self.current_player == "prey":
             # self.__find_path(self.current_position_prey, self.current_position_predator)
             return self.__find_path(self.current_position_prey, self.current_position_predator)
-
 
     def __find_min_f(self, open_list):
         min_f_square = min(open_list, key=lambda square: square.f)
@@ -392,31 +344,6 @@ class Interface:
 
         return neighbors
 
-    def update_positions(self):
-        """ Update Pac-Man and goal positions based on the A* algorithm results """
-        if self.current_position_predator and self.current_position_prey:
-            # Update Pac-Man position
-            self.current_position_predator = (
-                (self.current_position_predator[0] + 2) % self.grid_size,
-                self.current_position_predator[1]
-            )
-
-            # Update goal position
-            self.current_position_prey = (
-                (self.current_position_prey[0] + 1) % self.grid_size,
-                self.current_position_prey[1]
-            )
-
-    def loop(self):
-        self.update_positions()
-
-        if self.current_position_predator and self.current_position_prey:
-            # Draw Pac-Man and goal based on updated positions
-            self.pacman(self.current_position_predator)
-            self.goal(self.current_position_prey)
-
-            self.master.after(1000, self.loop)
-
     def grid_lines(self):
         for i in range(1, self.grid_size):
             x = i * self.square_size
@@ -436,10 +363,17 @@ class Interface:
 
         # path.reverse()
         return path
+    
+    # def animate(self):
+    #     if self.current_position_predator and self.current_position_prey:
+    #         # self.update_positions()
+    #         self.__update()
+    #         self.master.after(200, self.animate)
 
 
 if __name__ == "__main__":
     interface = Interface()
     # interface.loop()
+    # interface.animate()
     """ o método loop só pode ser iniciado após as posições serem definidas"""
     interface.draw_interface()
