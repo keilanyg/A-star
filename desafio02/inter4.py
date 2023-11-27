@@ -301,6 +301,10 @@ class Interface:
             print("agora entrou aqui")
             self.current_player = "predator"
             self.num_square_walk = 0
+        
+        if self.current_position_predator == self.current_position_prey:
+            print("predador encontrou a presa")
+            return True
 
         print("player", self.current_player)
         print('posição atual predador', self.current_position_predator)
@@ -312,10 +316,10 @@ class Interface:
 
     def call_search_logic(self):
         # and self.num_square_walk < self.max_num_square_predator_walk:
-        if self.current_player == "predator":
-            return self.__find_path(self.current_position_predator, self.current_position_prey)
+        if self.current_player == "predator" and self.num_square_walk < self.max_num_square_predator_walk:
+            return self.__find_path(self.current_position_predator, self.current_position_prey, set(), set())
         # and self.num_square_walk < self.max_num_square_prey_walk:
-        elif self.current_player == "prey":
+        elif self.current_player == "prey" and self.num_square_walk < self.max_num_square_prey_walk:
             # self.__find_path(self.current_position_prey, self.current_position_predator)
             return self.__find_path(self.current_position_prey, self.current_position_predator)
 
