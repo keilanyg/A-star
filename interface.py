@@ -3,6 +3,7 @@ from square import Square
 from priority_queue import PriorityQueue
 from PIL import Image, ImageTk
 
+
 class Interface:
     def __init__(self, matrix=None):
         self.matrix = []
@@ -20,10 +21,9 @@ class Interface:
         self.background_image = Image.open("imagens/banner.jpg")
         self.background_image = self.background_image.resize((900, 550))  # Redimensiona a imagem
         self.background_photo = ImageTk.PhotoImage(self.background_image)
-       
+
         # Adicionando a imagem de fundo ao Canvas
         self.canvas.create_image(0, 0, anchor="nw", image=self.background_photo)
-       
 
         self.state_button = None
         self.start_position = None
@@ -164,7 +164,7 @@ class Interface:
 
             neighbors_positions = self.__find_neighbors(current_position) #vizinhos validos.
 
-            for neighbor in neighbors_positions: # loop para ignorar os vizinhos visitados.
+            for neighbor in neighbors_positions:
                 if neighbor in self.visited_list:# ignora o vizinho visitado.
                     continue
 
